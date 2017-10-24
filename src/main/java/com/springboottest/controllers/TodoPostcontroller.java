@@ -19,9 +19,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RestController
 public class TodoPostcontroller {
+    private final static int InValidData=400;
+    private final static int InternalException=500;
+    private final static int NotFound=404;
     private AtomicInteger value = new AtomicInteger();
     private Gson gson = new Gson();
-    Map mapValues = new HashMap<Integer, TodoItem>();
+    private Map mapValues = new HashMap<Integer, TodoItem>();
 
     /*
     Todo post method
@@ -34,7 +37,7 @@ public class TodoPostcontroller {
         try {
             if((incomeStr==null)&&(incomeStr.equals("")))
             {
-                httpServletResponse.setStatus(400);
+                httpServletResponse.setStatus(InValidData);
                 return AgtestService.getErrorDetails(incomeStr);
             }
             TodoItem todoItemtemp = gson.fromJson(incomeStr, TodoItem.class);
@@ -45,11 +48,11 @@ public class TodoPostcontroller {
                 mapValues.put(id, todoItem);
                 return gson.toJson(todoItem);
             } else {
-                httpServletResponse.setStatus(400);
+                httpServletResponse.setStatus(InValidData);
                 return AgtestService.getErrorDetails(incomeStr);
             }
         } catch (Exception e) {
-            httpServletResponse.setStatus(500);
+            httpServletResponse.setStatus(InternalException);
             return AgtestService.getErrorDetails(incomeStr);
         }
     }
@@ -60,13 +63,20 @@ public class TodoPostcontroller {
      */
     @RequestMapping(value = "/todo/{id}", method = RequestMethod.GET,produces={"application/json; charset=UTF-8"})
     public String todoGet(@PathVariable int id, HttpServletResponse httpServletResponse) {
-        TodoItem todoItem = (TodoItem) mapValues.get(id);
-        if (todoItem != null)
-            return gson.toJson(todoItem);
-        else {
-            httpServletResponse.setStatus(404);
-            Details details = new Details("Item with " + id + " not found");
-            return gson.toJson(new Errors(new Details[]{details}, "NotFoundError"));
+        try {
+            TodoItem todoItem = (TodoItem) mapValues.get(id);
+            if (todoItem != null)
+                return gson.toJson(todoItem);
+            else {
+                httpServletResponse.setStatus(NotFound);
+                Details details = new Details("Item with " + id + " not found");
+                return gson.toJson(new Errors(new Details[]{details}, "NotFoundError"));
+            }
+        }
+        catch(Exception e)
+        {
+            httpServletResponse.setStatus(InternalException);
+            return AgtestService.getErrorDetails(new Integer(id).toString());
         }
     }
 
@@ -81,14 +91,14 @@ public class TodoPostcontroller {
         try {
             if((str==null)&&(!str.equals("")))
             {
-                httpServletResponse.setStatus(400);
+                httpServletResponse.setStatus(InValidData);
                 return AgtestService.getErrorDetails(str);
             }
             TodoItem todoItem = gson.fromJson(str, TodoItem.class);
             if ((null != todoItem)) {
                 if (todoItem.getText() != null)
                     if (!(todoItem.getText().length() > 0) && (todoItem.getText().length() < 50)) {
-                        httpServletResponse.setStatus(400);
+                        httpServletResponse.setStatus(InValidData);
                         return AgtestService.getErrorDetails(todoItem.getText());
                     }
                 TodoItem todoItemfound = (TodoItem) mapValues.get(id);
@@ -97,16 +107,16 @@ public class TodoPostcontroller {
                     mapValues.put(id, todoItemfound);
                     return gson.toJson(todoItemfound);
                 } else {
-                    httpServletResponse.setStatus(404);
+                    httpServletResponse.setStatus(NotFound);
                     Details details = new Details("Item with " + id + " not found");
                     return gson.toJson(new Errors(new Details[]{details}, "NotFoundError"));
                 }
             } else {
-                httpServletResponse.setStatus(404);
+                httpServletResponse.setStatus(NotFound);
                 return AgtestService.getErrorDetails(str);
             }
         } catch (Exception e) {
-            httpServletResponse.setStatus(500);
+            httpServletResponse.setStatus(InternalException);
             return AgtestService.getErrorDetails(str);
         }
 

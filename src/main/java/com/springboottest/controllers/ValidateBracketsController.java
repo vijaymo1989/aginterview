@@ -4,7 +4,6 @@ package com.springboottest.controllers;
 import com.springboottest.model.ValidateBrackets;
 import com.springboottest.service.AgtestService;
 import com.google.gson.Gson;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
